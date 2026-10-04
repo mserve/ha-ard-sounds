@@ -24,6 +24,7 @@ logger:
 media_player:
   - platform: universal
     name: DEV_MEDIA_PLAYER
+    state_template: "on"
     device_class: speaker
     unique_id: dev_media_player
     commands:
