@@ -6,7 +6,6 @@ License: MIT License
 
 SPDX-FileCopyrightText: 2026 Martin Stuckenbröker (mserve)
 SPDX-License-Identifier: MIT
-
 """
 
 from datetime import timedelta

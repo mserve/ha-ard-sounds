@@ -35,14 +35,7 @@ ArdSoundsRequestCache
 
 
 class ArdSoundsService:
-    """
-    Base class for ARD Sounds services.
-
-    Attributes:
-
-    """
-
-    pass
+    """Base class for ARD Sounds services."""
 
 
 class ArdSoundsRequestCache:

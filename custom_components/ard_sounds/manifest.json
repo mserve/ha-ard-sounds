@@ -1,0 +1,13 @@
+{
+  "domain": "ard_sounds",
+  "name": "ARD Sounds",
+  "codeowners": ["@mserve"],
+  "config_flow": true,
+  "dependencies": ["media_source"],
+  "documentation": "https://github.com/mserve/ha-ard-sounds",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/mserve/ha-ard-sounds/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
