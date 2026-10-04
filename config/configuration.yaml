@@ -4,6 +4,16 @@ default_config:
 # https://www.home-assistant.io/integrations/homeassistant/
 homeassistant:
   debug: true
+  auth_providers:
+    - type: trusted_networks
+      allow_bypass_login : true
+      trusted_networks:
+        - 192.168.0.0/24
+        - 172.16.0.0/12
+        - 10.0.0.0/8
+        - 127.0.0.1
+        - ::1
+    - type: homeassistant
 
 # https://www.home-assistant.io/integrations/logger/
 logger:
