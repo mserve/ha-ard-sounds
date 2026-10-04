@@ -12,15 +12,16 @@ and **maintainable**.
 ## Project Overview
 
 **Name:** ARD Sounds
-**Domain:** `ard_doungs`
+**Domain:** `ard_sounds`
 **Type:** Home Assistant Custom Integration
 **Distribution:** HACS
-**Config type:** YAML (`configuration.yaml`)
+**Config type:** UI Config Flow
 **Primary features:**
-- Access to ARD Sounds content via public API
+- Access to ARD Sounds content via public GraphQL API
 - Media Browser integration via Media Source
 - Playback via Media Players
-- Played/unplayed persistence
+- Played/unplayed persistence (additional feature)
+- Mark podcasts for notifications (additional feature)
 - Manual reload service
 
 ---
@@ -29,7 +30,7 @@ and **maintainable**.
 
 ### Home Assistant First
 - Follow Home Assistant core patterns and best practices.
-- Prefer `DataUpdateCoordinator` for polling and refresh logic.
+- Prefer `DataUpdateCoordinator` for polling and refresh logic, if required for any periodically occuring background tasks.
 - Use `Media Source` for media browsing (not MediaPlayer browse hooks).
 - Never block the event loop (all I/O must be async).
 
@@ -48,15 +49,20 @@ Agents must **not introduce these features** unless explicitly requested.
 Agents must respect and preserve this structure:
 
 custom_components/ard_sounds/
+├─ api/
+|   └─ api_client.py
+├─ translations/
+|   ├─ de.json
+|   └─ en.json
 ├─ __init__.py
-├─ manifest.json
+├─ classes.py
+├─ config_flow.py
 ├─ const.py
-├─ coordinator.py
-├─ entity.py
+├─ manifest.json
 ├─ media_source.py
-├─ ard_sounds.py
-└─ translations/en.json
+└─ models.py
 
+Tests shall follow pytest typical naming and must be in directory `tests/`.
 
 Additional files:
 - `hacs.json` (repo root)
@@ -73,7 +79,7 @@ Do **not** move runtime files outside `custom_components/ard_sounds`.
 ## Coding Standards
 
 ### Python
-- Target Python **3.13*
+- Target Python **3.14** (minimum **3.14.2** for Home Assistant Core 2026.9.4)
 - Use type hints where reasonable
 - Prefer `TypedDict` / `dataclass` for structured data
 - Keep functions small and single-purpose
@@ -81,7 +87,7 @@ Do **not** move runtime files outside `custom_components/ard_sounds`.
 ### Async Rules
 - All network access must use Home Assistant's `aiohttp` session
 - No synchronous HTTP, file, or sleep calls
-- Timeouts and error handling are mandatory for external feeds
+- Timeouts and error handling are mandatory for external calls to the API
 
 ---
 
@@ -102,7 +108,7 @@ Configuration lives in `.ruff.toml`.
 
 Agents must ensure:
 - `manifest.json` contains all required fields
-- `DOMAIN` is always `"podcast_hub"`
+- `DOMAIN` is always `"ard_sounds"`
 - Logging uses `LOGGER`, imported from `.const`
 - No hardcoded file paths
 - No direct access to HA internals outside public APIs
@@ -112,10 +118,11 @@ Agents must ensure:
 ## Media Source Rules
 - Do not use deprecated media player constants. Use the new MediaClass, MediaType, and RepeatMode enum instead.
 - All media browsing must go through the Media Source platform
-- `media_content_id` format is fixed:
-
-podcast_hub://<feed_id>/<episode_guid>
-
+- Home Assistant-facing `media_content_id` values must use
+  `media-source://ard_sounds/<identifier>`.
+- Construct these IDs with `BrowseMediaSource` or `generate_media_source_id`.
+- The `ard_sounds://` prefix is an internal identifier convention; map it to
+  Home Assistant's Media Source scheme at the platform boundary.
 
 - `async_resolve_media()` must return a **final, playable URL**
 - Redirects must be handled
@@ -127,33 +134,34 @@ Agents must **not** introduce MediaPlayerEntity subclasses.
 
 ## Sensors
 
-- One sensor per configured podcast feed
-- Entity ID pattern:
-
-sensor.podcast_<feed_id>
-
-- Sensor state must be simple (e.g. episode count)
-- Rich data must live in attributes
-- Attributes must be size-conscious (respect `max_episodes`)
+- No sensors are offered within first state.
 
 ---
 
 ## Services
 
 Required service:
-- `podcast_hub.reload_sources`
+- `ard_sounds.reload_sources`: enforces reload of station and podcast entries
 
 Service handlers:
 - Must be async
-- Must never raise uncaught exceptions
+- Register services once in `async_setup`, and validate the loaded config entry
+  when a service is called
+- Must not allow raw API exceptions to escape
+- Report expected failures through Home Assistant-handled `HomeAssistantError`
+  or `ServiceValidationError`, so callers can detect failure
 - Must log failures but keep the integration running
 
 ---
 
 ## Configuration Rules
 
-- Configuration is both **YAML** and **Config Flow**
-- Parsing happens in `async_setup`
+- Configuration is **Config Flow** only
+- Config Flow validates user input before creating a config entry
+- `async_setup_entry` reads stored entry data/options and initializes runtime
+  objects
+- `async_setup` handles integration-wide setup and service registration
+- Store entry-owned runtime objects in typed `ConfigEntry.runtime_data`
 - Invalid feeds must not crash setup
 - Missing optional fields must have safe defaults
 
