@@ -19,24 +19,85 @@
     "step": {
       "init": {
         "title": "ARD Sounds",
+        "description": "Medienbrowser-Einstellungen und gemeinsame Podcast-Favoriten verwalten. Favoriten werden lokal in Home Assistant gespeichert.",
+        "menu_options": {
+          "preferences": "Medienbrowser-Einstellungen",
+          "add_star": "Podcast als Favorit speichern",
+          "remove_stars": "Podcast-Favoriten entfernen"
+        }
+      },
+      "preferences": {
+        "title": "ARD Sounds",
         "data": {
           "page_size": "Suchergebnisse pro Seite",
-          "episode_limit": "Episoden pro Seite"
+          "episode_limit": "Episoden pro Seite",
+          "sonos_compatibility": "Sonos-Kompatibilität"
         },
         "data_description": {
           "page_size": "Anzahl zwischen 10 und 100. Buchstabenordner zeigen alle passenden Podcasts.",
-          "episode_limit": "Anzahl zwischen 10 und 100."
+          "episode_limit": "Anzahl zwischen 10 und 100.",
+          "sonos_compatibility": "Audio-Inhaltstypen für Episoden und Radio-Streams verwenden, damit sie im Sonos-Medienbrowser angezeigt werden. Standardmäßig deaktiviert."
+        }
+      },
+      "add_star": {
+        "title": "Podcast als Favorit speichern",
+        "description": "Podcasts nach Namen suchen. Leere Podcasts und bereits gespeicherte Favoriten werden ausgeblendet. Bei vielen Treffern bitte die Suche eingrenzen.",
+        "data": {
+          "query": "Podcast-Name"
+        }
+      },
+      "choose_star": {
+        "title": "Podcast auswählen",
+        "description": "Ergebnisse für „{query}“. Einen Podcast auswählen und bestätigen, um ihn als Favorit zu speichern.",
+        "data": {
+          "podcast_id": "Podcast"
+        }
+      },
+      "remove_stars": {
+        "title": "Podcast-Favoriten entfernen",
+        "description": "Podcasts zum Entfernen auswählen. Vorübergehend leere oder nicht verfügbare Podcasts bleiben gespeichert, bis du sie entfernst.",
+        "data": {
+          "podcast_ids": "Zu entfernende Podcasts"
         }
       }
     },
     "error": {
-      "invalid_options": "Bitte Zahlen zwischen 10 und 100 eingeben."
+      "invalid_options": "Bitte Zahlen zwischen 10 und 100 eingeben.",
+      "cannot_connect": "ARD Sounds konnte nicht durchsucht werden. Bitte später erneut versuchen.",
+      "cannot_save": "Favoriten konnten nicht gespeichert werden. Bitte erneut versuchen.",
+      "invalid_query": "Bitte einen Podcast-Namen mit 1–200 Zeichen eingeben.",
+      "no_results": "Keine neuen Podcasts mit veröffentlichten Episoden gefunden. Bitte die Suche eingrenzen.",
+      "invalid_selection": "Bitte mindestens einen gültigen Podcast auswählen."
+    },
+    "abort": {
+      "not_loaded": "ARD Sounds muss geladen sein, um Favoriten zu verwalten.",
+      "no_stars": "Es sind noch keine Podcast-Favoriten gespeichert."
     }
   },
   "services": {
     "reload_sources": {
       "name": "Quellen neu laden",
       "description": "Gespeicherte Sender- und Podcast-Metadaten verwerfen und neu abrufen."
+    },
+    "star_podcast": {
+      "name": "Podcast als Favorit speichern",
+      "description": "Einen Podcast in der gemeinsamen lokalen Favoritenliste speichern. Wiederholte Aufrufe sind sicher.",
+      "fields": {
+        "podcast_id": {
+          "name": "Podcast-ID",
+          "description": "Eine numerische Sendungs-ID, Core-ID oder media-source://ard_sounds/show/... ID."
+        }
+      }
+    },
+    "unstar_podcast": {
+      "name": "Podcast-Favorit entfernen",
+      "description": "Einen Podcast aus der gemeinsamen lokalen Favoritenliste entfernen, auch wenn ARD nicht erreichbar ist.",
+      "fields": {
+        "podcast_id": {
+          "name": "Podcast-ID",
+          "description": "Eine gespeicherte numerische Sendungs-ID, Core-ID oder media-source://ard_sounds/show/... ID."
+        }
+      }
     }
   },
   "selector": {
@@ -45,7 +106,8 @@
         "radio": "Live-Radio",
         "podcasts": "Podcasts",
         "next": "Nächste Seite",
-        "search": "Suchergebnisse"
+        "search": "Suchergebnisse",
+        "starred": "★ Podcast-Favoriten"
       }
     }
   },
@@ -67,6 +129,15 @@
     },
     "unavailable_media": {
       "message": "Diese Audiodatei ist derzeit nicht verfügbar."
+    },
+    "invalid_star_storage": {
+      "message": "Gespeicherte ARD-Podcast-Favoriten haben ein ungültiges Speicherformat."
+    },
+    "star_failed": {
+      "message": "ARD-Podcast-Favoriten konnten nicht geladen oder geändert werden. Bitte erneut versuchen."
+    },
+    "unavailable_podcast": {
+      "message": "Dieser Podcast ist nicht mehr verfügbar."
     }
   }
 }

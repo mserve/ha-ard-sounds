@@ -21,10 +21,21 @@ from homeassistant.components.media_player import (
 from homeassistant.components.media_source import MediaSourceItem, Unresolvable
 from homeassistant.config_entries import ConfigEntryState
 
-from custom_components.ard_sounds.api import ArdSoundsResponseError
+from custom_components.ard_sounds.api import (
+    ArdSoundsConnectionError,
+    ArdSoundsResponseError,
+)
+from custom_components.ard_sounds.classes import StarredPodcasts
 from custom_components.ard_sounds.const import DOMAIN, PODCAST_INITIALS
 from custom_components.ard_sounds.media_source import ArdSoundsMediaSource
-from custom_components.ard_sounds.models import AudioCandidate, Route
+from custom_components.ard_sounds.models import (
+    AudioCandidate,
+    Episode,
+    Page,
+    Podcast,
+    Route,
+    Stream,
+)
 
 if TYPE_CHECKING:
     from custom_components.ard_sounds.classes import ArdSoundsService
@@ -38,7 +49,12 @@ def source(service: ArdSoundsService) -> ArdSoundsMediaSource:
     hass = MagicMock()
     hass.config.language = "en"
     entry = SimpleNamespace(
-        state=ConfigEntryState.LOADED, runtime_data=SimpleNamespace(service=service)
+        state=ConfigEntryState.LOADED,
+        runtime_data=SimpleNamespace(
+            service=service,
+            stars=StarredPodcasts(hass, "test"),
+            sonos_compatibility=False,
+        ),
     )
     hass.config_entries.async_entries.return_value = [entry]
     return ArdSoundsMediaSource(hass)
@@ -61,6 +77,7 @@ async def test_root_and_podcast_letters(
         root = await source.async_browse_media(item())
         assert root.can_search
         assert [child.media_content_id for child in root.children] == [
+            "media-source://ard_sounds/starred",
             "media-source://ard_sounds/radio",
             "media-source://ard_sounds/podcasts",
         ]
@@ -85,6 +102,55 @@ async def test_root_and_podcast_letters(
         assert episode_page.children[0].can_play
         assert not episode_page.children[0].can_expand
     await service.cache.close()
+
+
+@pytest.mark.parametrize(
+    ("mime_type", "expected"),
+    [
+        ("audio/mpeg", "audio/mpeg"),
+        ("audio/aac", "audio/aac"),
+        ("audio/mp4", "audio/mp4"),
+        ("application/ogg", "audio/ogg"),
+        ("application/vnd.apple.mpegurl", "audio/x-mpegurl"),
+    ],
+)
+@pytest.mark.parametrize("content_class", [Episode, Stream])
+async def test_sonos_content_types(
+    source: ArdSoundsMediaSource,
+    mime_type: str,
+    expected: str,
+    content_class: type[Episode | Stream],
+) -> None:
+    """Expose Sonos-compatible MIME types for both episodes and live streams."""
+    runtime = source.hass.config_entries.async_entries.return_value[0].runtime_data
+    runtime.sonos_compatibility = True
+    content = content_class(
+        "audio",
+        "Audio",
+        audios=(AudioCandidate("https://audio.example/play", mime_type),),
+    )
+    fake = AsyncMock()
+    fake.episodes.return_value = (Podcast("show", "Show"), Page((content,)))
+    fake.stations.return_value = (content,)
+    fake.alphabetical_shows.return_value = (Podcast("show", "Show"),)
+    runtime.service = fake
+    route = "show/show" if content_class is Episode else "station/unknown"
+    with patch(
+        "custom_components.ard_sounds.media_source.async_get_translations",
+        return_value={},
+    ):
+        page = await source.async_browse_media(item(route))
+        browsed = page.children[0]
+        assert browsed.media_content_type == expected
+        assert browsed.can_play
+        assert not browsed.can_expand
+        page = await source.async_browse_media(item("podcasts/letter/S"))
+        podcast = page.children[0]
+        assert podcast.media_content_type == "podcast"
+        assert not podcast.can_play
+        runtime.sonos_compatibility = False
+        page = await source.async_browse_media(item(route))
+        assert page.children[0].media_content_type == "music"
 
 
 async def test_radio_groups(
@@ -177,3 +243,71 @@ async def test_reload_runtime_and_unloaded(source: ArdSoundsMediaSource) -> None
     assert (
         await source.async_resolve_media(item("episode/id"))
     ).url == "https://audio.example/new.mp3"
+
+
+async def test_starred_folder_hides_empty_and_missing_shows(
+    source: ArdSoundsMediaSource, service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """Refresh saved shows without dropping selections that are empty or removed."""
+    stars = source.hass.config_entries.async_entries.return_value[0].runtime_data.stars
+    with patch("custom_components.ard_sounds.classes.Store.async_save"):
+        for identifier, title in (("1", "Old title"), ("2", "Empty"), ("3", "Removed")):
+            await stars.async_star(Podcast(identifier, title))
+    saved = stars.podcasts
+    populated = {
+        "id": "1",
+        "title": "Current title",
+        "availableEpisodes": {"nodes": [{"id": "episode"}]},
+    }
+    empty = {"id": "2", "title": "Empty", "availableEpisodes": {"nodes": []}}
+    shows = {"1": populated, "2": empty, "3": None}
+
+    async def request(_operation: str, variables: dict[str, str]) -> dict[str, object]:
+        return {"show": shows[variables["id"]]}
+
+    client.request.side_effect = request
+    with patch(
+        "custom_components.ard_sounds.media_source.async_get_translations",
+        return_value={},
+    ):
+        folder = await source.async_browse_media(item("starred"))
+        assert [child.title for child in folder.children] == ["★ Current title"]
+        assert folder.children[0].media_content_id == "media-source://ard_sounds/show/1"
+        assert not folder.can_search
+        assert stars.podcasts == saved
+        empty["availableEpisodes"]["nodes"] = [{"id": "new-episode"}]
+        service.cache.invalidate()
+        folder = await source.async_browse_media(item("starred"))
+        assert [child.title for child in folder.children] == [
+            "★ Current title",
+            "★ Empty",
+        ]
+        assert stars.podcasts == saved
+        service.cache.invalidate()
+        client.request.side_effect = ArdSoundsConnectionError
+        with pytest.raises(BrowseError):
+            await source.async_browse_media(item("starred"))
+    await service.cache.close()
+
+
+async def test_star_indicator_in_search(
+    source: ArdSoundsMediaSource, service: ArdSoundsService
+) -> None:
+    """Star indicators preserve identities and distinguish titles shared by shows."""
+    page = await service.search("Wissen")
+    stars = source.hass.config_entries.async_entries.return_value[0].runtime_data.stars
+    with patch("custom_components.ard_sounds.classes.Store.async_save"):
+        await stars.async_star(page.items[0])
+    with patch(
+        "custom_components.ard_sounds.media_source.async_get_translations",
+        return_value={},
+    ):
+        results = await source.async_search_media(
+            item(),
+            SearchMediaQuery(
+                search_query="Wissen", media_filter_classes=[MediaClass.PODCAST]
+            ),
+        )
+    assert [child.title for child in results.result] == ["★ Wissen", "Wissen"]
+    assert results.result[0].media_content_id != results.result[1].media_content_id
+    await service.cache.close()

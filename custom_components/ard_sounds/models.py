@@ -21,7 +21,7 @@ from .const import MAX_ROUTE_LENGTH, PODCAST_INITIALS
 
 if TYPE_CHECKING:
     from .api import ArdSoundsGraphQLClient
-    from .classes import ArdSoundsRequestCache, ArdSoundsService
+    from .classes import ArdSoundsRequestCache, ArdSoundsService, StarredPodcasts
 
 MAX_ROUTE_PARTS = 3
 CONTROL_CHAR_LIMIT = 32
@@ -244,6 +244,8 @@ class ArdSoundsRuntime:
     client: ArdSoundsGraphQLClient
     cache: ArdSoundsRequestCache
     service: ArdSoundsService
+    stars: StarredPodcasts
+    sonos_compatibility: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,6 +288,7 @@ class Route:
             "station": (2,),
             "stream": (2,),
             "podcasts": (1, 2, 3),
+            "starred": (1,),
             "show": (2, 3),
             "episode": (2,),
             "search": (3,),
@@ -309,3 +312,22 @@ class Route:
             msg = "Invalid podcast letter"
             raise ValueError(msg)
         return route
+
+
+def podcast_identifier(value: str) -> str:
+    """Accept a raw show ID or a podcast's media-source ID, never an episode ID."""
+    value = value.strip()
+    if value.startswith("media-source://"):
+        prefix = "media-source://ard_sounds/"
+        if not value.startswith(prefix):
+            msg = "Invalid podcast source"
+            raise ValueError(msg)
+        route = Route.parse(value.removeprefix(prefix))
+    elif value.startswith(("ard_sounds://", "show/")):
+        route = Route.parse(value)
+    else:
+        route = Route.parse(Route("show", value).identifier)
+    if route.kind != "show" or route.page:
+        msg = "Select a podcast, not an episode or page"
+        raise ValueError(msg)
+    return route.key

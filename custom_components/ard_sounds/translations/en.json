@@ -19,24 +19,85 @@
     "step": {
       "init": {
         "title": "ARD Sounds",
+        "description": "Manage browsing preferences and shared starred podcasts. Stars are saved locally in Home Assistant.",
+        "menu_options": {
+          "preferences": "Browsing preferences",
+          "add_star": "Star a podcast",
+          "remove_stars": "Remove starred podcasts"
+        }
+      },
+      "preferences": {
+        "title": "ARD Sounds",
         "data": {
           "page_size": "Search results per page",
-          "episode_limit": "Episodes per page"
+          "episode_limit": "Episodes per page",
+          "sonos_compatibility": "Sonos compatibility"
         },
         "data_description": {
           "page_size": "A number between 10 and 100. Letter folders show all matching podcasts.",
-          "episode_limit": "A number between 10 and 100."
+          "episode_limit": "A number between 10 and 100.",
+          "sonos_compatibility": "Use audio content types for episodes and radio streams so they appear in the Sonos media browser. Disabled by default."
+        }
+      },
+      "add_star": {
+        "title": "Star a podcast",
+        "description": "Search for a podcast by name. Empty and already starred podcasts are excluded. For many matches, narrow your search to find the podcast you want.",
+        "data": {
+          "query": "Podcast name"
+        }
+      },
+      "choose_star": {
+        "title": "Choose a podcast",
+        "description": "Results for “{query}”. Select a podcast and submit to star it.",
+        "data": {
+          "podcast_id": "Podcast"
+        }
+      },
+      "remove_stars": {
+        "title": "Remove starred podcasts",
+        "description": "Select podcasts to unstar. Temporarily empty or unavailable podcasts remain in this list until you remove them.",
+        "data": {
+          "podcast_ids": "Podcasts to remove"
         }
       }
     },
     "error": {
-      "invalid_options": "Enter numbers between 10 and 100."
+      "invalid_options": "Enter numbers between 10 and 100.",
+      "cannot_connect": "Unable to search ARD Sounds. Please try again later.",
+      "cannot_save": "Unable to save your stars. Please try again.",
+      "invalid_query": "Enter a podcast name of 1–200 characters.",
+      "no_results": "No unstarred podcasts with published episodes were found. Try a more specific search.",
+      "invalid_selection": "Select at least one valid podcast."
+    },
+    "abort": {
+      "not_loaded": "ARD Sounds must be loaded to manage stars.",
+      "no_stars": "You have no starred podcasts yet."
     }
   },
   "services": {
     "reload_sources": {
       "name": "Reload sources",
       "description": "Clear and refresh cached station and podcast metadata."
+    },
+    "star_podcast": {
+      "name": "Star podcast",
+      "description": "Save a podcast to the shared local starred collection. Repeating this action is safe.",
+      "fields": {
+        "podcast_id": {
+          "name": "Podcast ID",
+          "description": "A numeric show ID, core ID, or media-source://ard_sounds/show/... ID."
+        }
+      }
+    },
+    "unstar_podcast": {
+      "name": "Unstar podcast",
+      "description": "Remove a podcast from the shared local starred collection, including when ARD is unavailable.",
+      "fields": {
+        "podcast_id": {
+          "name": "Podcast ID",
+          "description": "A saved numeric show ID, core ID, or media-source://ard_sounds/show/... ID."
+        }
+      }
     }
   },
   "selector": {
@@ -45,7 +106,8 @@
         "radio": "Live radio",
         "podcasts": "Podcasts",
         "next": "Next page",
-        "search": "Search results"
+        "search": "Search results",
+        "starred": "★ Starred podcasts"
       }
     }
   },
@@ -67,6 +129,15 @@
     },
     "unavailable_media": {
       "message": "This audio is currently unavailable."
+    },
+    "invalid_star_storage": {
+      "message": "Saved ARD podcast selections have an invalid storage format."
+    },
+    "star_failed": {
+      "message": "Unable to load or update starred ARD podcasts. Please try again."
+    },
+    "unavailable_podcast": {
+      "message": "This podcast is no longer available."
     }
   }
 }

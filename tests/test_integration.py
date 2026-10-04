@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from homeassistant.components import media_source
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
@@ -123,7 +124,10 @@ async def test_setup_retry(hass: HomeAssistant) -> None:
     await hass.config_entries.async_unload(entry.entry_id)
 
 
-async def test_options_flow(hass: HomeAssistant, api_data: dict[str, Any]) -> None:
+@pytest.mark.parametrize("sonos_compatibility", [False, True])
+async def test_options_flow(
+    hass: HomeAssistant, api_data: dict[str, Any], *, sonos_compatibility: bool
+) -> None:
     """Options persist via public HA APIs and reload the runtime safely."""
     entry = MockConfigEntry(domain=DOMAIN, unique_id=DOMAIN)
     entry.add_to_hass(hass)
@@ -133,16 +137,76 @@ async def test_options_flow(hass: HomeAssistant, api_data: dict[str, Any]) -> No
         return_value=api_data["stations"],
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
+        assert not entry.runtime_data.sonos_compatibility
         result = await hass.config_entries.options.async_init(entry.entry_id)
+        assert result["type"] is FlowResultType.MENU
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"next_step_id": "preferences"}
+        )
         with pytest.raises(InvalidData):
             await hass.config_entries.options.async_configure(
                 result["flow_id"], {"page_size": 101, "episode_limit": 20}
             )
         result = await hass.config_entries.options.async_configure(
-            result["flow_id"], {"page_size": 20, "episode_limit": 10}
+            result["flow_id"],
+            {
+                "page_size": 20,
+                "episode_limit": 10,
+                "sonos_compatibility": sonos_compatibility,
+            },
         )
         assert result["type"] is FlowResultType.CREATE_ENTRY
         await hass.async_block_till_done()
-        assert entry.options == {"page_size": 20, "episode_limit": 10}
+        assert entry.options == {
+            "page_size": 20,
+            "episode_limit": 10,
+            "sonos_compatibility": sonos_compatibility,
+        }
         assert entry.runtime_data.service.page_size == OPTIONS_PAGE_SIZE
+        assert entry.runtime_data.sonos_compatibility is sonos_compatibility
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        assert entry.runtime_data.sonos_compatibility is sonos_compatibility
+        assert await hass.config_entries.async_unload(entry.entry_id)
+
+
+@pytest.mark.parametrize("sonos_compatibility", [False, True])
+async def test_sonos_audio_filter(
+    hass: HomeAssistant, api_data: dict[str, Any], *, sonos_compatibility: bool
+) -> None:
+    """Exercise HA's filtering with Sonos's actual audio-MIME acceptance condition."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=DOMAIN,
+        options={"sonos_compatibility": sonos_compatibility},
+    )
+    entry.add_to_hass(hass)
+
+    async def request(operation: str, _variables: dict[str, Any]) -> dict[str, Any]:
+        return api_data["stations" if operation == "Stations" else "episodes"]
+
+    with patch(
+        "custom_components.ard_sounds.api.ArdSoundsGraphQLClient.request",
+        side_effect=request,
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        uri = "media-source://ard_sounds/show/62520168"
+        original = await media_source.async_browse_media(hass, uri)
+        filtered = await media_source.async_browse_media(
+            hass,
+            uri,
+            content_filter=lambda item: item.media_content_type.startswith("audio/"),
+        )
+        episodes = [child for child in original.children if child.can_play]
+        accepted = [child for child in filtered.children if child.can_play]
+        assert episodes
+        if sonos_compatibility:
+            assert [child.media_content_id for child in accepted] == [
+                child.media_content_id for child in episodes
+            ]
+            assert all(child.media_content_type == "audio/mpeg" for child in accepted)
+            assert filtered.not_shown == 0
+        else:
+            assert not accepted
+            assert filtered.not_shown == len(episodes)
+        assert any(child.can_expand for child in filtered.children)
         assert await hass.config_entries.async_unload(entry.entry_id)

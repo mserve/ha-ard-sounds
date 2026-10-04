@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from homeassistant.components.media_player import (
@@ -31,7 +32,7 @@ from homeassistant.helpers.translation import async_get_translations
 
 from .api import ArdSoundsError, ArdSoundsNotFoundError
 from .const import DOMAIN, PODCAST_INITIALS
-from .models import CatalogItem, Route
+from .models import ArdSoundsRuntime, CatalogItem, Episode, Podcast, Route, Stream
 
 MAX_SEARCH_LENGTH = 200
 
@@ -57,14 +58,18 @@ class ArdSoundsMediaSource(MediaSource):
         super().__init__(DOMAIN)
         self.hass = hass
 
-    def _service(self) -> ArdSoundsService:
-        """Require a currently loaded catalog."""
+    def _runtime(self) -> ArdSoundsRuntime:
+        """Require the currently loaded catalog and persisted collection."""
         for entry in self.hass.config_entries.async_entries(DOMAIN):
             if entry.state is ConfigEntryState.LOADED:
                 loaded: ArdSoundsConfigEntry = entry
-                return loaded.runtime_data.service
+                return loaded.runtime_data
         msg = "ARD Sounds is not loaded"
         raise ArdSoundsNotFoundError(msg)
+
+    def _service(self) -> ArdSoundsService:
+        """Resolve the catalog without retaining stale entry-owned objects."""
+        return self._runtime().service
 
     async def _labels(self) -> dict[str, str]:
         """Use translated browse labels supplied by the integration."""
@@ -76,6 +81,7 @@ class ArdSoundsMediaSource(MediaSource):
             "podcasts": "Podcasts",
             "next": "Next page",
             "search": "Search results",
+            "starred": "★ Starred podcasts",
         }
         return {
             key: values.get(
@@ -106,20 +112,40 @@ class ArdSoundsMediaSource(MediaSource):
             children=children,
         )
 
-    @staticmethod
-    def _content(kind: str, content: CatalogItem) -> BrowseMediaSource:
+    def _content(self, kind: str, content: CatalogItem) -> BrowseMediaSource:
         """Build a show folder or a playable stream/episode."""
         podcast = kind == "show"
         return BrowseMediaSource(
             domain=DOMAIN,
             identifier=Route(kind, content.core_id or content.id).identifier,
-            title=content.title,
+            title=(
+                f"★ {content.title}"
+                if isinstance(content, Podcast)
+                and self._runtime().stars.contains(content)
+                else content.title
+            ),
             media_class=MediaClass.PODCAST if podcast else MediaClass.MUSIC,
-            media_content_type=MediaType.PODCAST if podcast else MediaType.MUSIC,
+            media_content_type=self._content_type(content),
             can_play=not podcast,
             can_expand=podcast,
             thumbnail=content.image_url,
         )
+
+    def _content_type(self, content: CatalogItem) -> MediaType | str:
+        """Advertise audio MIME types for Sonos's Media Source browse filter."""
+        if isinstance(content, Podcast):
+            return MediaType.PODCAST
+        if self._runtime().sonos_compatibility and isinstance(
+            content, (Episode, Stream)
+        ):
+            now = datetime.now(UTC)
+            for candidate in content.audios:
+                if candidate.is_available(now):
+                    return {
+                        "application/ogg": "audio/ogg",
+                        "application/vnd.apple.mpegurl": "audio/x-mpegurl",
+                    }.get(candidate.mime_type, candidate.mime_type)
+        return MediaType.MUSIC
 
     async def async_browse_media(self, item: MediaSourceItem) -> BrowseMediaSource:
         """Expose bounded catalog pages with explicit continuation folders."""
@@ -146,11 +172,19 @@ class ArdSoundsMediaSource(MediaSource):
                 self.name,
                 can_search=True,
                 children=[
+                    self._folder(Route("starred"), labels["starred"]),
                     self._folder(Route("radio"), labels["radio"]),
                     self._folder(
                         Route("podcasts"), labels["podcasts"], can_search=True
                     ),
                 ],
+            )
+        if route.kind == "starred":
+            shows = await service.starred_shows(self._runtime().stars.podcasts)
+            return self._folder(
+                route,
+                labels["starred"],
+                children=[self._content("show", show) for show in shows],
             )
         if route.kind in ("radio", "broadcaster", "station"):
             return await self._radio(route, service, labels)

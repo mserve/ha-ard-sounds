@@ -9,14 +9,20 @@ from collections import OrderedDict
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.storage import Store
+
 from .api import ArdSoundsNotFoundError, ArdSoundsResponseError
 from .const import (
     DEFAULT_TTL,
+    DOMAIN,
+    LOGGER,
     MAX_CACHE_ENTRIES,
     MAX_CATALOG_PAGES,
     MAX_PAGE_SIZE,
     MAX_SHOW_CATALOG_PAGES,
     PODCAST_INITIALS,
+    STARRED_STORAGE_VERSION,
 )
 from .models import (
     AudioCandidate,
@@ -27,6 +33,7 @@ from .models import (
     Stream,
     audio_candidates,
     item_fields,
+    normalize_url,
     parse_date,
     podcast_initial,
     podcast_sort_title,
@@ -35,7 +42,141 @@ from .models import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from homeassistant.core import HomeAssistant
+
     from .api import ArdSoundsGraphQLClient
+
+
+class StarredPodcasts:
+    """Persist one entry's shared selection independently of browsing preferences."""
+
+    def __init__(self, hass: HomeAssistant, entry_id: str) -> None:
+        """Use versioned HA storage without owning a file path."""
+        self._store = Store[list[dict[str, Any]]](
+            hass,
+            STARRED_STORAGE_VERSION,
+            f"{DOMAIN}.{entry_id}.stars",
+            atomic_writes=True,
+        )
+        self._podcasts: dict[str, Podcast] = {}
+        self._lock = asyncio.Lock()
+        self._closed = False
+
+    @property
+    def podcasts(self) -> tuple[Podcast, ...]:
+        """Return saved selections, including temporarily unavailable shows."""
+        return tuple(
+            sorted(
+                self._podcasts.values(),
+                key=lambda podcast: (podcast_sort_title(podcast.title), podcast.id),
+            )
+        )
+
+    def contains(self, podcast: Podcast) -> bool:
+        """Recognize both numeric IDs and canonical core IDs."""
+        return any(
+            stored.id == podcast.id
+            or bool(podcast.core_id and stored.core_id == podcast.core_id)
+            for stored in self._podcasts.values()
+        )
+
+    async def async_load(self) -> None:
+        """Restore valid saved metadata without querying the remote catalog."""
+        data = await self._store.async_load()
+        if data is None:
+            return
+        if not isinstance(data, list):
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="invalid_star_storage"
+            )
+        for record in data:
+            if not isinstance(record, dict) or not all(
+                isinstance(record.get(key), str) and record[key]
+                for key in ("id", "title")
+            ):
+                LOGGER.warning("Skipping invalid saved ARD podcast selection")
+                continue
+            podcast = Podcast(
+                id=record["id"],
+                title=record["title"],
+                core_id=self._text(record, "core_id") or None,
+                description=self._text(record, "description"),
+                image_url=normalize_url(record.get("image_url")),
+                station=Station(
+                    self._text(record, "station_id") or "unknown",
+                    self._text(record, "station_title") or "ARD",
+                    self._text(record, "broadcaster") or "ARD",
+                ),
+            )
+            if not self.contains(podcast):
+                self._podcasts[podcast.core_id or podcast.id] = podcast
+
+    @staticmethod
+    def _text(record: dict[str, Any], key: str) -> str:
+        """Default missing optional saved metadata safely."""
+        value = record.get(key)
+        return value if isinstance(value, str) else ""
+
+    @staticmethod
+    def _serialize(podcast: Podcast) -> dict[str, Any]:
+        """Keep only identity and display metadata in local storage."""
+        return {
+            "id": podcast.id,
+            "core_id": podcast.core_id,
+            "title": podcast.title,
+            "description": podcast.description,
+            "image_url": podcast.image_url,
+            "station_id": podcast.station.id,
+            "station_title": podcast.station.title,
+            "broadcaster": podcast.station.broadcaster,
+        }
+
+    async def async_star(self, podcast: Podcast) -> None:
+        """Save an idempotent addition, serializing concurrent changes."""
+        async with self._lock:
+            self._require_open()
+            updated = {
+                key: stored
+                for key, stored in self._podcasts.items()
+                if stored.id != podcast.id
+                and not (podcast.core_id and stored.core_id == podcast.core_id)
+            }
+            updated[podcast.core_id or podcast.id] = podcast
+            if updated != self._podcasts:
+                await self._save(updated)
+
+    async def async_unstar(self, identifiers: list[str]) -> None:
+        """Remove selections without requiring API access; save a batch once."""
+        async with self._lock:
+            self._require_open()
+            updated = {
+                key: podcast
+                for key, podcast in self._podcasts.items()
+                if not {key, podcast.id, podcast.core_id}.intersection(identifiers)
+            }
+            if updated != self._podcasts:
+                await self._save(updated)
+
+    async def _save(self, podcasts: dict[str, Podcast]) -> None:
+        """Use HA's awaited atomic save before publishing the updated collection."""
+        await self._store.async_save([self._serialize(p) for p in podcasts.values()])
+        self._podcasts = podcasts
+
+    def _require_open(self) -> None:
+        """Reject changes through a runtime that has already been unloaded."""
+        if self._closed:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="not_loaded"
+            )
+
+    async def async_close(self) -> None:
+        """Await active writes before a replacement runtime can restore saved state."""
+        async with self._lock:
+            self._closed = True
+
+    async def async_remove(self) -> None:
+        """Delete entry-owned state only when the config entry is removed."""
+        await self._store.async_remove()
 
 
 class ArdSoundsRequestCache:
@@ -340,6 +481,42 @@ class ArdSoundsService:
             **item_fields(show),
             station=Station.from_api(show.get("publicationService")),
         ), Page(tuple(items.values()), cursor, has_next, total)
+
+    async def podcast(self, identifier: str, *, allow_empty: bool = False) -> Podcast:
+        """Look up one show using either its numeric ID or canonical core ID."""
+        data = await self.cache.request("Show", {"id": identifier})
+        show = data.get("show")
+        if not isinstance(show, dict) or not show.get("id"):
+            msg = "Show is no longer available"
+            raise ArdSoundsNotFoundError(msg)
+        if not allow_empty and not self._has_episodes(show):
+            msg = "Show has no published episodes"
+            raise ArdSoundsNotFoundError(msg)
+        return Podcast(
+            **item_fields(show),
+            station=Station.from_api(show.get("publicationService")),
+        )
+
+    async def starred_shows(
+        self, selections: tuple[Podcast, ...]
+    ) -> tuple[Podcast, ...]:
+        """Refresh a small collection while retaining unavailable selections locally."""
+        semaphore = asyncio.Semaphore(4)
+
+        async def available(podcast: Podcast) -> Podcast | None:
+            async with semaphore:
+                try:
+                    return await self.podcast(podcast.core_id or podcast.id)
+                except ArdSoundsNotFoundError:
+                    return None
+
+        shows = await asyncio.gather(*(available(p) for p in selections))
+        return tuple(
+            sorted(
+                (show for show in shows if show is not None),
+                key=lambda show: (podcast_sort_title(show.title), show.id),
+            )
+        )
 
     @staticmethod
     def _episode(node: dict[str, Any]) -> Episode:

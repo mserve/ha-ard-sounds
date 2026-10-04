@@ -1,2 +1,16 @@
 reload_sources:
   fields: {}
+star_podcast:
+  fields:
+    podcast_id:
+      required: true
+      example: "media-source://ard_sounds/show/62520168"
+      selector:
+        text:
+unstar_podcast:
+  fields:
+    podcast_id:
+      required: true
+      example: "media-source://ard_sounds/show/62520168"
+      selector:
+        text:

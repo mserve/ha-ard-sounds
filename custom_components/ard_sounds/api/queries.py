@@ -50,7 +50,7 @@ QUERIES = {
             }}
           }}
         }}""",
-    "Show": f"query Show($id: ID!) {{ show(id: $id) {{ {SHOW} }} }}",
+    "Show": f"query Show($id: ID!) {{ show(id: $id) {{ {SHOW_WITH_EPISODES} }} }}",
     "Episode": f"query Episode($id: ID!) {{ item(id: $id) {{ {EPISODE} }} }}",
     "Stream": f"""
         query Stream($id: String!) {{ permanentLivestream(id: $id) {{ {STREAM} }} }}

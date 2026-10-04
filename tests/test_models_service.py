@@ -51,6 +51,7 @@ def podcast_node(
     [
         Route(),
         Route("radio"),
+        Route("starred"),
         Route("podcasts", "letter", "A"),
         Route("podcasts", "letter", "#"),
         Route("show", "urn:ard:show:abc/a%?", "cursor/+="),

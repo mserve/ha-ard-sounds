@@ -37,9 +37,50 @@ HLS and other audio formats depends on the selected player. Playback requires
 that the player itself can reach the public audio host; the integration does not
 proxy or download audio.
 
-In **Settings → Devices & services → ARD Sounds → Configure**, adjust search
-results and episodes per page (10–100 each). Defaults are 50 results and 30
-episodes. Changing these preferences reloads the entry.
+In **Settings → Devices & services → ARD Sounds → Configure → Browsing
+preferences**, adjust search results and episodes per page (10–100 each).
+Defaults are 50 results and 30 episodes. Changing these preferences reloads the
+entry.
+
+If Sonos hides episodes as incompatible, enable **Sonos compatibility** in the
+same preferences dialog. It advertises playable episodes and radio streams with
+audio MIME types so they pass Sonos's Media Source browser filter. The option is
+off by default and applies to all players browsing ARD Sounds. Sonos resolves the
+media-source ID to an audio URL for playback. The option does not change audio
+formats; the player still needs to support the chosen stream format.
+
+## Starred podcasts
+
+Open **Settings → Devices & services → ARD Sounds → Configure → Star a podcast**.
+Search by name, select a result, and submit to save it. Result labels include the
+station and broadcaster to distinguish podcasts with the same name. Search uses
+the configured results-per-page limit; narrow the query if your podcast is not
+among the results. Searching or canceling the dialog does not change your stars.
+
+**Media → ARD Sounds → ★ Starred podcasts** lists saved podcasts alphabetically.
+Starred shows also have a `★` prefix in alphabet folders and search results.
+Use **Configure → Remove starred podcasts** to remove one or more selections.
+Adding or removing stars takes effect on the next browse without reloading the
+integration or changing browsing preferences.
+
+Stars are shared by users of this HA installation and persist across reloads and
+restarts. They use stable show IDs and versioned Home Assistant storage. Empty or
+removed shows stay saved, but are hidden from media listings; the Remove dialog
+still includes them and works without contacting ARD. Removing the integration
+deletes its saved stars. Starring does not enable notifications.
+
+Automations and Developer Tools can also use these actions:
+
+```yaml
+action: ard_sounds.star_podcast
+data:
+  podcast_id: media-source://ard_sounds/show/62520168
+```
+
+Use `ard_sounds.unstar_podcast` with the same data to remove a star. Both actions
+also accept numeric show IDs and core IDs. Repeated calls do not duplicate stars,
+and removing a missing star is safe. Adding a star validates the show through ARD;
+removing one only needs its saved identifier.
 
 ## Refreshing the catalog
 
@@ -72,9 +113,9 @@ list. Search uses offsets because ARD currently returns null cursors
 for search results. A player may require a different supported audio format, and
 redirected live URLs can expire.
 
-The first release is entity-free, with no sensors or background polling. Podcast
-starring, episode notifications, later-stage sensors, and played/unplayed
-persistence remain planned in T08 of [TASKS.md](TASKS.md). ARD authentication,
+The integration is entity-free, with no sensors or background polling. Episode
+notifications, later-stage sensors, and played/unplayed persistence remain
+planned in T08 of [TASKS.md](TASKS.md). ARD authentication,
 personalized content, offline downloads, and dashboards are outside the scope.
 
 ## Development and validation
