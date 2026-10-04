@@ -1,0 +1,43 @@
+{
+  "data": {
+    "programSets": {
+      "totalCount": 3078,
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "WyJwcmltYXJ5X2tleV9hc2MiLFsxNjc2XV0="
+      },
+      "nodes": [
+        {
+          "id": "1176",
+          "coreId": "urn:ard:show:feb73adba71276fd",
+          "title": "Plattdeutsche Nachrichten",
+          "synopsis": "Aktuelle plattdeutsche Nachrichten werktags auf Bremen Eins und hier für Sie zum Hören und Lesen.",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:3520f216e92a4b6c?w={width}&ch=ea80da1966405998",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:80732c72cfb48a14?w={width}&ch=30c080e812e9ebb8"
+          },
+          "publicationService": {
+            "id": "5684",
+            "title": "Bremen Eins",
+            "organizationName": "RadioBremen"
+          }
+        },
+        {
+          "id": "1676",
+          "coreId": null,
+          "title": "Brunners Welt",
+          "synopsis": "Brunner hält für SR 2 die Augen offen. Und wenn er was nicht mitkriegen sollte, dann wird ihn Frau Barscheck, seine Nachbarin, schon mit der Nase drauf stoßen. Dann kann er sich nämlich seine Gedanken darüber machen, was wichtig ist und wo die Trends der Zeit zu spüren sind.",
+          "image": {
+            "url": "https://img.ardmediathek.de/standard/00/48/23/90/42/-1774185891/16x9/{width}?mandant=ard",
+            "url1X1": "https://img.ardmediathek.de/standard/00/48/23/90/42/-1774185891/1x1/{width}?mandant=ard"
+          },
+          "publicationService": {
+            "id": "5520",
+            "title": "SR kultur",
+            "organizationName": "SR"
+          }
+        }
+      ]
+    }
+  }
+}

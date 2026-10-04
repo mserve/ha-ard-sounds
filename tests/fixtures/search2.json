@@ -1,0 +1,45 @@
+{
+  "data": {
+    "search": {
+      "programSets": {
+        "totalCount": 250,
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": null
+        },
+        "nodes": [
+          {
+            "id": "8758500",
+            "coreId": "urn:ard:show:ffbe53ea2c26eb21",
+            "title": "Das Wissen",
+            "synopsis": "Täglich Neues aus Gesundheit und Geschichte, Wissenschaft und Weltgeschehen. Wichtige Zusammenhänge, gründliche Recherchen, überraschende Hintergründe.",
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:6bdcf2373817ddcd?w={width}&ch=d688b0e3e53ec2e8",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:1b0c92844b78bed8?w={width}&ch=57464d8ca9c8762e"
+            },
+            "publicationService": {
+              "id": "2956",
+              "title": "SWR Kultur",
+              "organizationName": "SWR"
+            }
+          },
+          {
+            "id": "12212469",
+            "coreId": "urn:ard:show:e8025310268cd1c7",
+            "title": "Wissen Impossible",
+            "synopsis": "Die Welt ist kompliziert. Auf viele Fragen gibt es keine einfachen Antworten. Aber ist Wissen deshalb unmöglich? Für Julia Vismann und Stephan Karkowsky auf keinen Fall. Das Team von \"Wissen Impossible\" sucht Antworten auf die Fragen unserer Zukunft ...",
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:da2bda7c4919428c?w={width}&ch=092b4c7d42eb1d69",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:c3e29fec82c1834c?w={width}&ch=8397d0b743886281"
+            },
+            "publicationService": {
+              "id": "5848",
+              "title": "radioeins",
+              "organizationName": "RBB"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

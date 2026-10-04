@@ -1,0 +1,43 @@
+{
+  "data": {
+    "programSets": {
+      "totalCount": 3078,
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "WyJwcmltYXJ5X2tleV9hc2MiLFsxMTIyXV0="
+      },
+      "nodes": [
+        {
+          "id": "1110",
+          "coreId": "urn:ard:show:2c105ac761118ee9",
+          "title": "Der Stichtag – Die Chronik der ARD",
+          "synopsis": "Täglich blicken wir auf Menschen und Ereignisse, die die Welt bewegt haben. Unsere Chronik beleuchtet Jahrestage und ihren Hintergrund.",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:1a06e53474f13f43?w={width}&ch=b7b63a3a73ecc193",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:765a77e3ddfac01e?w={width}&ch=1a54516848387500"
+          },
+          "publicationService": {
+            "id": "5684",
+            "title": "Bremen Eins",
+            "organizationName": "RadioBremen"
+          }
+        },
+        {
+          "id": "1122",
+          "coreId": "urn:ard:show:fbb1775cda85d930",
+          "title": "Fragen an den Autor",
+          "synopsis": "Was treibt die klügsten Köpfe unserer Zeit an? Welche Ideen stecken in den wichtigsten neuen Sachbüchern - und was bedeuten sie für unseren Alltag?",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:342bda1927c0e07e?w={width}&ch=02448fc284ecc948",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:342bda1927c0e07e?w={width}&ch=02448fc284ecc948"
+          },
+          "publicationService": {
+            "id": "5520",
+            "title": "SR kultur",
+            "organizationName": "SR"
+          }
+        }
+      ]
+    }
+  }
+}

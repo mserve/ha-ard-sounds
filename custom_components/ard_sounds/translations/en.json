@@ -1,1 +1,72 @@
-{}
+{
+  "title": "ARD Sounds",
+  "config": {
+    "step": {
+      "user": {
+        "title": "ARD Sounds",
+        "description": "Browse ARD radio and podcasts in the media browser. No ARD account is required."
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to ARD Sounds. Please try again later."
+    },
+    "abort": {
+      "already_configured": "ARD Sounds is already configured.",
+      "single_instance_allowed": "ARD Sounds is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ARD Sounds",
+        "data": {
+          "page_size": "Podcasts per page",
+          "episode_limit": "Episodes per page"
+        },
+        "data_description": {
+          "page_size": "A number between 10 and 100.",
+          "episode_limit": "A number between 10 and 100."
+        }
+      }
+    },
+    "error": {
+      "invalid_options": "Enter numbers between 10 and 100."
+    }
+  },
+  "services": {
+    "reload_sources": {
+      "name": "Reload sources",
+      "description": "Clear and refresh cached station and podcast metadata."
+    }
+  },
+  "selector": {
+    "browse": {
+      "options": {
+        "radio": "Live radio",
+        "podcasts": "Podcasts",
+        "next": "Next page",
+        "search": "Search results"
+      }
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "ARD Sounds is not loaded."
+    },
+    "reload_failed": {
+      "message": "ARD sources could not be fully reloaded. Please try again."
+    },
+    "cannot_connect": {
+      "message": "Unable to connect to ARD Sounds."
+    },
+    "invalid_media": {
+      "message": "Invalid media selection."
+    },
+    "browse_failed": {
+      "message": "Unable to browse ARD content. Check the connection and selection."
+    },
+    "unavailable_media": {
+      "message": "This audio is currently unavailable."
+    }
+  }
+}

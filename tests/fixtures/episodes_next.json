@@ -1,0 +1,106 @@
+{
+  "data": {
+    "show": {
+      "id": "62520168",
+      "coreId": "urn:ard:show:a9563a05c5502a9a",
+      "title": "1000 Antworten",
+      "synopsis": "Woher stammt die \"Quarantäne\"? Wie entsteht ein Schwarzes Loch? Warum fallen Wolken nicht vom Himmel? SWR Redakteur Gábor Paál und Gäste aus der Wissenschaft erklären im Wechsel jeden Tag ein kleines Stückchen Welt.",
+      "image": {
+        "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:55f187b241dffbef?w={width}&ch=1b6ed74f60b75b73",
+        "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:de850ccfe5d4b882?w={width}&ch=9590893eb832a24b"
+      },
+      "publicationService": {
+        "id": "542816",
+        "title": "ARD",
+        "organizationName": "ARD"
+      },
+      "items": {
+        "totalCount": 1504,
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "WyJwdWJsaXNoX2RhdGVfZGVzYyIsWyIyMDI2LTEwLTAxVDEyOjE1OjAwKzAyOjAwIiwxNDE1NDg4OV1d"
+        },
+        "nodes": [
+          {
+            "id": "15434919",
+            "coreId": "urn:ard:publication:efb699321b2b2178",
+            "title": "Warum sind Schaumblasen in der Badewanne stabiler als Seifenblasen?",
+            "synopsis": "Schaum- und Seifenblasen sind physikalisch das gleiche Phänomen. Der Unterschied liegt darin, dass man bei Seifenblasen vor allem an die isolierten Blasen denkt, die Kinder durch Pusten herstellen oder die von einer Seifenblasenmaschine erzeugt...",
+            "duration": 248,
+            "publishDate": "2026-10-02T06:00:00+02:00",
+            "isPublished": true,
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:1df99cd609b7bf06?w={width}&ch=0f660c60afbabae2",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:4093f87ef6d5289c?w={width}&ch=43f8f54bb6dc72d8"
+            },
+            "audios": [
+              {
+                "url": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-sind-schaumblasen-in-der-badewanne-stabiler-als-seifenblasen.mp3",
+                "mimeType": "audio/mp3"
+              },
+              {
+                "url": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-sind-schaumblasen-in-der-badewanne-stabiler-als-seifenblasen.mp3",
+                "mimeType": "audio/mp3"
+              }
+            ],
+            "audioList": [
+              {
+                "href": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-sind-schaumblasen-in-der-badewanne-stabiler-als-seifenblasen.mp3",
+                "distributionType": "download",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-02T06:00:00+02:00",
+                "availableTo": null
+              },
+              {
+                "href": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-sind-schaumblasen-in-der-badewanne-stabiler-als-seifenblasen.mp3",
+                "distributionType": "onDemand",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-02T06:00:00+02:00",
+                "availableTo": null
+              }
+            ]
+          },
+          {
+            "id": "14154889",
+            "coreId": "urn:ard:publication:3b7e523138b3f027",
+            "title": "Warum ist es DIE Donau, aber DER Rhein? Wovon hängt das Geschlecht von Flüssen ab?",
+            "synopsis": "Was das Geschlecht von Flussnamen betrifft, ist die wichtigste Regel im Deutschen, dass es keine Regel gibt – anders als zum Beispiel im Lateinischen, wo die Flüsse grundsätzlich männlich sind, wo auch die Donau \"Danuvius\" heißt. Im Deutschen hängt...",
+            "duration": 130,
+            "publishDate": "2026-10-01T12:15:00+02:00",
+            "isPublished": true,
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:91af1dd7f598b8f9?w={width}&ch=a7e85f103d22c099",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:db781b6787a59d29?w={width}&ch=03535a1faf78c7a3"
+            },
+            "audios": [
+              {
+                "url": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-ist-es-die-donau-aber-der-rhein-wovon-haengt-das-geschlecht-von-fluessen-ab.mp3",
+                "mimeType": "audio/mp3"
+              },
+              {
+                "url": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-ist-es-die-donau-aber-der-rhein-wovon-haengt-das-geschlecht-von-fluessen-ab.mp3",
+                "mimeType": "audio/mp3"
+              }
+            ],
+            "audioList": [
+              {
+                "href": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-ist-es-die-donau-aber-der-rhein-wovon-haengt-das-geschlecht-von-fluessen-ab.mp3",
+                "distributionType": "download",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-01T12:15:00+02:00",
+                "availableTo": null
+              },
+              {
+                "href": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-ist-es-die-donau-aber-der-rhein-wovon-haengt-das-geschlecht-von-fluessen-ab.mp3",
+                "distributionType": "onDemand",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-01T12:15:00+02:00",
+                "availableTo": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

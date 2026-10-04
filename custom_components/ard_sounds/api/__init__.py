@@ -1,10 +1,19 @@
-"""
-ARD Sounds API.
+"""Public transport exports for ARD Sounds."""
 
-Copyright (c) 2026 Martin Stuckenbröker (mserve)
-License: MIT License
+from .api_client import (
+    ArdSoundsConnectionError,
+    ArdSoundsError,
+    ArdSoundsGraphQLClient,
+    ArdSoundsNotFoundError,
+    ArdSoundsRateLimitError,
+    ArdSoundsResponseError,
+)
 
-SPDX-FileCopyrightText: 2026 Martin Stuckenbröker (mserve)
-SPDX-License-Identifier: MIT
-
-"""
+__all__ = [
+    "ArdSoundsConnectionError",
+    "ArdSoundsError",
+    "ArdSoundsGraphQLClient",
+    "ArdSoundsNotFoundError",
+    "ArdSoundsRateLimitError",
+    "ArdSoundsResponseError",
+]

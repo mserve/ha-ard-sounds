@@ -20,3 +20,19 @@ logger:
   default: info
   logs:
     custom_components.ard_sounds: debug
+
+media_player:
+  - platform: universal
+    name: DEV_MEDIA_PLAYER
+    device_class: speaker
+    unique_id: dev_media_player
+    commands:
+      turn_on:
+        action: scene.reload
+        data: {}
+      turn_off:
+        action: scene.reload
+        data: {}
+      play_media:
+        action: scene.reload
+        data: {}

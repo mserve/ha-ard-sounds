@@ -1,0 +1,71 @@
+{
+  "data": {
+    "permanentLivestreams": {
+      "totalCount": 195,
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "WyJwcmltYXJ5X2tleV9hc2MiLFsiMTAyOTYzNDMiXV0="
+      },
+      "nodes": [
+        {
+          "id": "10296341",
+          "coreId": "urn:ard:permanent-livestream:746477d13d92a028",
+          "title": "MDR KULTUR - Klassik im Konzert Livestream",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:81aa23627843af68?w={width}&ch=c23e8e1a4189f8ba",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:eedf22f9140fe3b8?w={width}&ch=88a679a8dd58c386"
+          },
+          "publicationService": {
+            "id": "5398",
+            "title": "MDR KULTUR",
+            "organizationName": "MDR"
+          },
+          "audios": [
+            {
+              "url": "https://mdr-284311-0.sslcast.mdr.de/mdr/284311/0/mp3/high/stream.mp3",
+              "mimeType": "audio/mp3"
+            }
+          ],
+          "audioList": [
+            {
+              "href": "https://mdr-284311-0.sslcast.mdr.de/mdr/284311/0/mp3/high/stream.mp3",
+              "distributionType": "live",
+              "audioCodec": "MP3",
+              "availableFrom": "2014-12-09T17:06:59.391+01:00",
+              "availableTo": null
+            }
+          ]
+        },
+        {
+          "id": "10296343",
+          "coreId": "urn:ard:permanent-livestream:a2524d96ebbd663e",
+          "title": "Livestream MDR SPUTNIK FIRSTPLAY",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:a1b93256f078a1f6?w={width}&ch=1707456ced034ffe",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:7ea72fe2503620fe?w={width}&ch=9794c58cc0aa0ba9"
+          },
+          "publicationService": {
+            "id": "5866",
+            "title": "MDR SPUTNIK",
+            "organizationName": "MDR"
+          },
+          "audios": [
+            {
+              "url": "https://mdr-284331-3.sslcast.mdr.de/mdr/284331/3/mp3/high/stream.mp3",
+              "mimeType": "audio/mp3"
+            }
+          ],
+          "audioList": [
+            {
+              "href": "https://mdr-284331-3.sslcast.mdr.de/mdr/284331/3/mp3/high/stream.mp3",
+              "distributionType": "live",
+              "audioCodec": "MP3",
+              "availableFrom": "2016-12-08T15:14:28.469+01:00",
+              "availableTo": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

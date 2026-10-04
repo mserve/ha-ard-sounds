@@ -1,0 +1,106 @@
+{
+  "data": {
+    "show": {
+      "id": "62520168",
+      "coreId": "urn:ard:show:a9563a05c5502a9a",
+      "title": "1000 Antworten",
+      "synopsis": "Woher stammt die \"Quarantäne\"? Wie entsteht ein Schwarzes Loch? Warum fallen Wolken nicht vom Himmel? SWR Redakteur Gábor Paál und Gäste aus der Wissenschaft erklären im Wechsel jeden Tag ein kleines Stückchen Welt.",
+      "image": {
+        "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:55f187b241dffbef?w={width}&ch=1b6ed74f60b75b73",
+        "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:de850ccfe5d4b882?w={width}&ch=9590893eb832a24b"
+      },
+      "publicationService": {
+        "id": "542816",
+        "title": "ARD",
+        "organizationName": "ARD"
+      },
+      "items": {
+        "totalCount": 1504,
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "WyJwdWJsaXNoX2RhdGVfZGVzYyIsWyIyMDI2LTEwLTAzVDA2OjAwOjAwKzAyOjAwIiwxMTMxODU1M11d"
+        },
+        "nodes": [
+          {
+            "id": "11319869",
+            "coreId": "urn:ard:publication:24152e29b6ce9274",
+            "title": "Wie definiert die Wissenschaft Klimawandel?",
+            "synopsis": "Klima ist definiert als das langjährige Mittel der meteorologischen Verhältnisse – in einer Region oder weltweit. Die wichtigsten Faktoren sind dabei Temperatur und Niederschlag – man kann auch noch den Wind dazunehmen – und wie sie sich jeweils übers...",
+            "duration": 175,
+            "publishDate": "2026-10-04T06:00:00+02:00",
+            "isPublished": true,
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:fc282e4357ebdda8?w={width}&ch=8abafe032dcac3a3",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:bf89c37081d48777?w={width}&ch=51f019aa1eb84556"
+            },
+            "audios": [
+              {
+                "url": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/wie-definiert-die-wissenschaft-klimawandel.mp3",
+                "mimeType": "audio/mp3"
+              },
+              {
+                "url": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/wie-definiert-die-wissenschaft-klimawandel.mp3",
+                "mimeType": "audio/mp3"
+              }
+            ],
+            "audioList": [
+              {
+                "href": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/wie-definiert-die-wissenschaft-klimawandel.mp3",
+                "distributionType": "download",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-04T06:00:00+02:00",
+                "availableTo": null
+              },
+              {
+                "href": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/wie-definiert-die-wissenschaft-klimawandel.mp3",
+                "distributionType": "onDemand",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-04T06:00:00+02:00",
+                "availableTo": null
+              }
+            ]
+          },
+          {
+            "id": "11318553",
+            "coreId": "urn:ard:publication:2a3c508799bcfca1",
+            "title": "Warum ändert Rotkohl seine Farbe je nach Zutat?",
+            "synopsis": "Rotkohl enthält den Farbstoff Cyanidin. Diese Substanz kommt in sehr vielen Pflanzen vor, vor allem in roten und blauen: Himbeeren, Heidelbeeren, Hibiskus, Johannisbeeren, Kirschen, Trauben. Also alles, was lila oder auch dunkelrote Flecken erzeugt,...",
+            "duration": 160,
+            "publishDate": "2026-10-03T06:00:00+02:00",
+            "isPublished": true,
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:562e4dc30c3488a6?w={width}&ch=c74c73abe649598a",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:8b67b48083ad5ce5?w={width}&ch=ee2f213002ca1d2b"
+            },
+            "audios": [
+              {
+                "url": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-aendert-rotkohl-seine-farbe-je-nach-zutat.mp3",
+                "mimeType": "audio/mp3"
+              },
+              {
+                "url": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-aendert-rotkohl-seine-farbe-je-nach-zutat.mp3",
+                "mimeType": "audio/mp3"
+              }
+            ],
+            "audioList": [
+              {
+                "href": "https://swr-dl.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-aendert-rotkohl-seine-farbe-je-nach-zutat.mp3",
+                "distributionType": "download",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-03T06:00:00+02:00",
+                "availableTo": null
+              },
+              {
+                "href": "https://swr-pd.ard-mcdn.de/swr/swrkultur/wissen/1000-antworten/warum-aendert-rotkohl-seine-farbe-je-nach-zutat.mp3",
+                "distributionType": "onDemand",
+                "audioCodec": "MP3",
+                "availableFrom": "2026-10-03T06:00:00+02:00",
+                "availableTo": null
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

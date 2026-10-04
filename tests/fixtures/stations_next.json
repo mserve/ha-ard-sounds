@@ -1,0 +1,93 @@
+{
+  "data": {
+    "permanentLivestreams": {
+      "totalCount": 195,
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "WyJwcmltYXJ5X2tleV9hc2MiLFsiMTAzNjg4MzEiXV0="
+      },
+      "nodes": [
+        {
+          "id": "10368827",
+          "coreId": "urn:ard:permanent-livestream:d2083a9d5cc1d15e",
+          "title": "Bayern 1 - Franken",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:4d5c36b502042227?w={width}&ch=3db3db760d3e685d",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:1aa6c0f0c543ed53?w={width}&ch=650f81281d34ebc8"
+          },
+          "publicationService": {
+            "id": "5494",
+            "title": "Bayern 1",
+            "organizationName": "BR"
+          },
+          "audios": [
+            {
+              "url": "https://dispatcher.rndfnk.com/br/br1/franken/mp3/mid?aggregator=ard-at",
+              "mimeType": "audio/mp3"
+            },
+            {
+              "url": "https://br-radio.ard-mcdn.de/br/radio/b1franken/hls/master.m3u8",
+              "mimeType": "application/vnd.apple.mpegurl"
+            }
+          ],
+          "audioList": [
+            {
+              "href": "https://dispatcher.rndfnk.com/br/br1/franken/mp3/mid?aggregator=ard-at",
+              "distributionType": "live",
+              "audioCodec": "MP3",
+              "availableFrom": "2026-04-27T09:35:43.619741+02:00",
+              "availableTo": null
+            },
+            {
+              "href": "https://br-radio.ard-mcdn.de/br/radio/b1franken/hls/master.m3u8",
+              "distributionType": "live",
+              "audioCodec": "AAC",
+              "availableFrom": "2026-04-27T09:35:43.619693+02:00",
+              "availableTo": null
+            }
+          ]
+        },
+        {
+          "id": "10368831",
+          "coreId": "urn:ard:permanent-livestream:ee6d67b7691b5f57",
+          "title": "Bayern 1 - Niederbayern/Oberpfalz",
+          "image": {
+            "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:4d5c36b502042227?w={width}&ch=3db3db760d3e685d",
+            "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:1aa6c0f0c543ed53?w={width}&ch=650f81281d34ebc8"
+          },
+          "publicationService": {
+            "id": "5494",
+            "title": "Bayern 1",
+            "organizationName": "BR"
+          },
+          "audios": [
+            {
+              "url": "https://dispatcher.rndfnk.com/br/br1/nbopf/mp3/mid?aggregator=ard-at",
+              "mimeType": "audio/mp3"
+            },
+            {
+              "url": "https://br-radio.ard-mcdn.de/br/radio/b1nbopf/hls/master.m3u8",
+              "mimeType": "application/vnd.apple.mpegurl"
+            }
+          ],
+          "audioList": [
+            {
+              "href": "https://dispatcher.rndfnk.com/br/br1/nbopf/mp3/mid?aggregator=ard-at",
+              "distributionType": "live",
+              "audioCodec": "MP3",
+              "availableFrom": "2026-04-27T09:35:52.639128+02:00",
+              "availableTo": null
+            },
+            {
+              "href": "https://br-radio.ard-mcdn.de/br/radio/b1nbopf/hls/master.m3u8",
+              "distributionType": "live",
+              "audioCodec": "AAC",
+              "availableFrom": "2026-04-27T09:35:52.639081+02:00",
+              "availableTo": null
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "data": {
+    "search": {
+      "programSets": {
+        "totalCount": 250,
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": null
+        },
+        "nodes": [
+          {
+            "id": "48866890",
+            "coreId": "urn:ard:show:8ffdb152c2603d4f",
+            "title": "Wissen",
+            "synopsis": "Aktuelle Themen aus Gesellschaft, Wissenschaft, Kunst, Geschichte und anderen Bereichen.",
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:babe55ca47a65a50?w={width}&ch=fabdba6676aed745",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:4f79010c4a2ac19a?w={width}&ch=cedc93271808a1c7"
+            },
+            "publicationService": {
+              "id": "5540",
+              "title": "radio3",
+              "organizationName": "RBB"
+            }
+          },
+          {
+            "id": "10449377",
+            "coreId": "urn:ard:show:a2d60d021c5d6652",
+            "title": "Wissen",
+            "synopsis": "Themen aus der Wissenschaft beleuchtet NDR Info eingehend, hintergründig und aus unterschiedlichen Blickwinkeln.",
+            "image": {
+              "url": "https://api.ardmediathek.de/image-service/images/urn:ard:image:107b9befa59aeafd?w={width}&ch=b50dd0dbd07d713e",
+              "url1X1": "https://api.ardmediathek.de/image-service/images/urn:ard:image:d8cfb70c3ba55c19?w={width}&ch=045410a3e703f7c0"
+            },
+            "publicationService": {
+              "id": "4000",
+              "title": "NDR Info",
+              "organizationName": "NDR"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
