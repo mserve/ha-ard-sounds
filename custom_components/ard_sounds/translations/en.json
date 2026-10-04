@@ -34,8 +34,8 @@
           "sonos_compatibility": "Sonos compatibility"
         },
         "data_description": {
-          "page_size": "A number between 10 and 100. Letter folders show all matching podcasts.",
-          "episode_limit": "A number between 10 and 100.",
+          "page_size": "Enter a whole number between 10 and 100. Letter folders show all matching podcasts.",
+          "episode_limit": "Enter a whole number between 10 and 100.",
           "sonos_compatibility": "Use audio content types for episodes and radio streams so they appear in the Sonos media browser. Disabled by default."
         }
       },

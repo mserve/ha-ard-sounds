@@ -34,8 +34,8 @@
           "sonos_compatibility": "Sonos-Kompatibilität"
         },
         "data_description": {
-          "page_size": "Anzahl zwischen 10 und 100. Buchstabenordner zeigen alle passenden Podcasts.",
-          "episode_limit": "Anzahl zwischen 10 und 100.",
+          "page_size": "Eine ganze Zahl zwischen 10 und 100 eingeben. Buchstabenordner zeigen alle passenden Podcasts.",
+          "episode_limit": "Eine ganze Zahl zwischen 10 und 100 eingeben.",
           "sonos_compatibility": "Audio-Inhaltstypen für Episoden und Radio-Streams verwenden, damit sie im Sonos-Medienbrowser angezeigt werden. Standardmäßig deaktiviert."
         }
       },

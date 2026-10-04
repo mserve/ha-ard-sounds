@@ -23,6 +23,8 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorMode,
     SelectSelector,
     SelectSelectorMode,
     TextSelector,
@@ -55,7 +57,17 @@ def options_schema(options: dict[str, Any]) -> vol.Schema:
         {
             vol.Required(
                 CONF_PAGE_SIZE, default=options.get(CONF_PAGE_SIZE, DEFAULT_PAGE_SIZE)
-            ): vol.All(vol.Coerce(int), vol.Range(min=10, max=MAX_PAGE_SIZE)),
+            ): vol.All(
+                NumberSelector(
+                    {
+                        "min": 10,
+                        "max": MAX_PAGE_SIZE,
+                        "step": 1,
+                        "mode": NumberSelectorMode.BOX,
+                    }
+                ),
+                vol.Coerce(int),
+            ),
             vol.Required(
                 CONF_SONOS_COMPATIBILITY,
                 default=options.get(CONF_SONOS_COMPATIBILITY, False),
@@ -63,7 +75,17 @@ def options_schema(options: dict[str, Any]) -> vol.Schema:
             vol.Required(
                 CONF_EPISODE_LIMIT,
                 default=options.get(CONF_EPISODE_LIMIT, DEFAULT_EPISODE_LIMIT),
-            ): vol.All(vol.Coerce(int), vol.Range(min=10, max=MAX_PAGE_SIZE)),
+            ): vol.All(
+                NumberSelector(
+                    {
+                        "min": 10,
+                        "max": MAX_PAGE_SIZE,
+                        "step": 1,
+                        "mode": NumberSelectorMode.BOX,
+                    }
+                ),
+                vol.Coerce(int),
+            ),
         }
     )
 
