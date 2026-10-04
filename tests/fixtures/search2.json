@@ -21,6 +21,13 @@
               "id": "2956",
               "title": "SWR Kultur",
               "organizationName": "SWR"
+            },
+            "availableEpisodes": {
+              "nodes": [
+                {
+                  "id": "11313611"
+                }
+              ]
             }
           },
           {
@@ -36,6 +43,13 @@
               "id": "5848",
               "title": "radioeins",
               "organizationName": "RBB"
+            },
+            "availableEpisodes": {
+              "nodes": [
+                {
+                  "id": "12251905"
+                }
+              ]
             }
           }
         ]

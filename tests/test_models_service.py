@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from copy import deepcopy
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
+from unittest.mock import patch
 
 import pytest
 
@@ -19,11 +20,13 @@ from custom_components.ard_sounds.api import (
     ArdSoundsResponseError,
 )
 from custom_components.ard_sounds.classes import ArdSoundsRequestCache, ArdSoundsService
+from custom_components.ard_sounds.const import MAX_PAGE_SIZE
 from custom_components.ard_sounds.models import (
     Route,
     audio_candidates,
     normalize_url,
     parse_date,
+    podcast_initial,
 )
 
 if TYPE_CHECKING:
@@ -32,11 +35,24 @@ if TYPE_CHECKING:
 PAGE_ITEMS = 2
 
 
+def podcast_node(
+    identifier: str, title: str, *, has_episodes: bool = True
+) -> dict[str, Any]:
+    """Create a show with an explicit published-episode presence response."""
+    return {
+        "id": identifier,
+        "title": title,
+        "availableEpisodes": {"nodes": [{"id": "episode"}] if has_episodes else []},
+    }
+
+
 @pytest.mark.parametrize(
     "route",
     [
         Route(),
         Route("radio"),
+        Route("podcasts", "letter", "A"),
+        Route("podcasts", "letter", "#"),
         Route("show", "urn:ard:show:abc/a%?", "cursor/+="),
         Route("episode", "urn:ard:publication:abc"),
         Route("search", "Wissen & Natur", "20"),
@@ -61,6 +77,11 @@ def test_identifier_round_trip(route: Route) -> None:
         "show/a/b/c",
         "search/test/-1",
         "search/test/10001",
+        "podcasts/letter",
+        "podcasts/letter/AA",
+        "podcasts/letter/%C3%84",
+        "podcasts/letter/a",
+        "podcasts/unknown/A",
     ],
 )
 def test_invalid_identifier(identifier: str) -> None:
@@ -278,4 +299,198 @@ async def test_expired_episode(
     client.request.return_value = {"item": node}
     with pytest.raises(ArdSoundsNotFoundError):
         await service.resolve("episode", node["id"])
+    await service.cache.close()
+
+
+@pytest.mark.parametrize(
+    ("title", "expected"),
+    [
+        ("ARD Wissen", "A"),
+        ("  ard Wissen", "A"),
+        ("Ärzte im Gespräch", "A"),
+        ("Ökologie", "O"),
+        ("Über Wissen", "U"),
+        ("Échos", "E"),
+        ("ßound", "S"),
+        ("1000 Antworten", "#"),
+        ("!Wissen", "#"),
+        ("世界", "#"),
+        ("", "#"),
+    ],
+)
+def test_podcast_initial(title: str, expected: str) -> None:
+    """Fold case and accents and keep digits, symbols, and other scripts under #."""
+    assert podcast_initial(title) == expected
+
+
+async def test_alphabetical_shows_all_pages(
+    service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """Collect a whole letter across API pages, deduplicating identities and sorting."""
+    first = {
+        "programSets": {
+            "nodes": [
+                podcast_node("1", "Azure"),
+                podcast_node("2", "Beta"),
+                podcast_node("3", "10 Nachrichten"),
+                podcast_node("empty", "Absent", has_episodes=False),
+            ],
+            "pageInfo": {"hasNextPage": True, "endCursor": "next"},
+            "totalCount": 999,
+        }
+    }
+    second = {
+        "programSets": {
+            "nodes": [
+                podcast_node("4", "Äpfel"),
+                podcast_node("5", "alpha"),
+                podcast_node("1", "Azure"),
+                podcast_node("6", "alpha"),
+                podcast_node("7", "!Wissen"),
+            ],
+            "pageInfo": {"hasNextPage": False, "endCursor": None},
+        }
+    }
+    client.request.side_effect = [first, second]
+    shows = await service.alphabetical_shows("A")
+    assert [(show.id, show.title) for show in shows] == [
+        ("5", "alpha"),
+        ("6", "alpha"),
+        ("4", "Äpfel"),
+        ("1", "Azure"),
+    ]
+    client.request.assert_awaited_with(
+        "Shows", {"first": MAX_PAGE_SIZE, "after": "next"}
+    )
+    assert [show.title for show in await service.alphabetical_shows("#")] == [
+        "!Wissen",
+        "10 Nachrichten",
+    ]
+    assert [show.title for show in await service.alphabetical_shows("B")] == ["Beta"]
+    assert await service.alphabetical_shows("Z") == ()
+    expected_calls = 2
+    assert client.request.await_count == expected_calls
+    await service.cache.close()
+
+
+async def test_alphabetical_shows_pagination_failure(
+    service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """Do not display a partial letter when a later API page fails."""
+    client.request.side_effect = [
+        {
+            "programSets": {
+                "nodes": [podcast_node("1", "Alpha")],
+                "pageInfo": {"hasNextPage": True, "endCursor": "next"},
+            }
+        },
+        ArdSoundsResponseError,
+    ]
+    with pytest.raises(ArdSoundsResponseError):
+        await service.alphabetical_shows("A")
+    await service.cache.close()
+
+
+async def test_alphabetical_shows_cursor_cycle(
+    service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """A multi-page cursor cycle cannot cause an unbounded catalog request."""
+    client.request.side_effect = [
+        {
+            "programSets": {
+                "nodes": [podcast_node(str(index), "Alpha")],
+                "pageInfo": {"hasNextPage": True, "endCursor": cursor},
+            }
+        }
+        for index, cursor in enumerate(("a", "b", "a"))
+    ]
+    with pytest.raises(ArdSoundsResponseError):
+        await service.alphabetical_shows("A")
+    await service.cache.close()
+
+
+async def test_alphabetical_shows_page_bound(
+    service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """The catalog bound reports failure instead of a successful partial list."""
+    client.request.side_effect = [
+        {
+            "programSets": {
+                "nodes": [podcast_node(str(index), "Alpha")],
+                "pageInfo": {"hasNextPage": True, "endCursor": str(index)},
+            }
+        }
+        for index in range(2)
+    ]
+    with (
+        patch("custom_components.ard_sounds.classes.MAX_SHOW_CATALOG_PAGES", 2),
+        pytest.raises(ArdSoundsResponseError),
+    ):
+        await service.alphabetical_shows("A")
+    await service.cache.close()
+
+
+@pytest.mark.parametrize("operation", ["Shows", "Search"])
+@pytest.mark.parametrize("has_episodes", [False, True])
+async def test_empty_podcasts_keep_continuation(
+    service: ArdSoundsService,
+    client: AsyncMock,
+    operation: str,
+    *,
+    has_episodes: bool,
+) -> None:
+    """Filter empty shows without trusting summary counts or skipping continuation."""
+    populated = podcast_node("populated", "Available", has_episodes=has_episodes)
+    populated["numberOfElements"] = 0  # ARD can underreport this summary field.
+    empty = podcast_node("empty", "Absent", has_episodes=False)
+    empty["numberOfElements"] = 99  # The actual episode connection is authoritative.
+    connection = {
+        "nodes": [populated, empty],
+        "pageInfo": {"hasNextPage": True, "endCursor": "next"},
+    }
+    payload = {"programSets": connection}
+    client.request.side_effect = None
+    client.request.return_value = (
+        payload if operation == "Shows" else {"search": payload}
+    )
+    page = await service.shows() if operation == "Shows" else await service.search("A")
+    assert [show.id for show in page.items] == (["populated"] if has_episodes else [])
+    assert page.has_next
+    assert page.next_cursor == ("next" if operation == "Shows" else "2")
+    await service.cache.close()
+
+
+async def test_alphabetical_shows_continues_past_empty_shows(
+    service: ArdSoundsService, client: AsyncMock
+) -> None:
+    """A raw page containing only empty shows cannot hide later populated shows."""
+    client.request.side_effect = [
+        {
+            "programSets": {
+                "nodes": [podcast_node("empty", "Absent", has_episodes=False)],
+                "pageInfo": {"hasNextPage": True, "endCursor": "next"},
+            }
+        },
+        {
+            "programSets": {
+                "nodes": [podcast_node("populated", "Available")],
+                "pageInfo": {"hasNextPage": False},
+            }
+        },
+    ]
+    assert [show.id for show in await service.alphabetical_shows("A")] == ["populated"]
+    await service.cache.close()
+
+
+@pytest.mark.parametrize("presence", [None, {}, {"nodes": None}])
+async def test_malformed_episode_presence(
+    service: ArdSoundsService, client: AsyncMock, presence: Any
+) -> None:
+    """Malformed episode checks are visible API failures rather than empty shows."""
+    node = podcast_node("show", "Available")
+    node["availableEpisodes"] = presence
+    client.request.side_effect = None
+    client.request.return_value = {"programSets": {"nodes": [node]}}
+    with pytest.raises(ArdSoundsResponseError, match="Missing ARD connection"):
+        await service.shows()
     await service.cache.close()

@@ -3,6 +3,14 @@
 IMAGE = "image { url url1X1 }"
 STATION = "publicationService { id title organizationName }"
 SHOW = f"id coreId title synopsis {IMAGE} {STATION}"
+EPISODE_FILTER = """
+filter: { isPublished: { equalTo: true },
+          itemType: { notEqualTo: EVENT_LIVESTREAM } }
+"""
+SHOW_WITH_EPISODES = f"""
+{SHOW}
+availableEpisodes: items(first: 1, {EPISODE_FILTER}) {{ nodes {{ id }} }}
+"""
 AUDIO = """
 audios { url mimeType }
 audioList { href distributionType audioCodec availableFrom availableTo }
@@ -23,13 +31,13 @@ QUERIES = {
     "Shows": f"""
         query Shows($first: Int!, $after: Cursor) {{
           programSets(first: $first, after: $after, orderBy: PRIMARY_KEY_ASC) {{
-            {PAGE} nodes {{ {SHOW} }}
+            {PAGE} nodes {{ {SHOW_WITH_EPISODES} }}
           }}
         }}""",
     "Search": f"""
         query Search($query: String!, $limit: Int!, $offset: Int!) {{
           search(query: $query, type: ProgramSets, limit: $limit, offset: $offset) {{
-            programSets {{ {PAGE} nodes {{ {SHOW} }} }}
+            programSets {{ {PAGE} nodes {{ {SHOW_WITH_EPISODES} }} }}
           }}
         }}""",
     "Episodes": f"""
@@ -37,8 +45,7 @@ QUERIES = {
           show(id: $id) {{
             {SHOW}
             items(first: $first, after: $after, orderBy: PUBLISH_DATE_DESC,
-                  filter: {{ isPublished: {{ equalTo: true }},
-                            itemType: {{ notEqualTo: EVENT_LIVESTREAM }} }}) {{
+                  {EPISODE_FILTER}) {{
               {PAGE} nodes {{ {EPISODE} }}
             }}
           }}

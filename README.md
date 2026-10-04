@@ -19,10 +19,15 @@ Configuration uses the UI; no YAML entry is needed.
 ## Browsing and playing
 
 Open **Media → ARD Sounds**. **Live radio** groups streams by broadcaster and
-station, retaining regional stream variants. **Podcasts** lists the public show
-catalog. Open a show to browse its published, currently available audio episodes.
+station, retaining regional stream variants. **Podcasts** opens A–Z and **#**
+folders. Each letter contains all matching shows in alphabetical order, ignoring
+case and accents (Ä under A, Ö under O, Ü under U). Numbers, symbols, and other
+scripts are grouped under **#**. Open a show to browse its published, currently
+available audio episodes.
+Podcasts with no published episodes are hidden from letter folders and search.
 Use search from ARD Sounds or Podcasts to find shows by name. **Next page** folders
-provide more catalog/search results or older episodes.
+provide more search results or older episodes. Letter folders do not require
+flipping through catalog pages.
 
 Select a media player and choose a station stream or episode. Home Assistant
 receives a `media-source://ard_sounds/...` ID. The integration refreshes audio
@@ -32,9 +37,9 @@ HLS and other audio formats depends on the selected player. Playback requires
 that the player itself can reach the public audio host; the integration does not
 proxy or download audio.
 
-In **Settings → Devices & services → ARD Sounds → Configure**, adjust podcasts and
-episodes per page (10–100 each). Defaults are 50 shows and 30 episodes. Changing
-these preferences reloads the entry.
+In **Settings → Devices & services → ARD Sounds → Configure**, adjust search
+results and episodes per page (10–100 each). Defaults are 50 results and 30
+episodes. Changing these preferences reloads the entry.
 
 ## Refreshing the catalog
 
@@ -57,8 +62,13 @@ served as a successful empty catalog, and expired data is refreshed on demand.
 
 The ARD public API can change or remove content. Catalog pages reflect the API's
 ordering and are not an assurance that every ARD show is discoverable. Radio
-listing is bounded to 20 pages of 100 records; catalogs exceeding that bound
-report an error. Search uses offsets because ARD currently returns null cursors
+listing is bounded to 20 pages of 100 records. Alphabetical browsing follows up to
+100 catalog pages of 100 shows internally, sharing cached metadata between
+letters. The first letter may take longer to open while metadata is loaded.
+Checking episode presence can take about a minute on a cold catalog load;
+subsequent letters reuse metadata cached for one hour.
+Catalogs exceeding these bounds report an error rather than showing a partial
+list. Search uses offsets because ARD currently returns null cursors
 for search results. A player may require a different supported audio format, and
 redirected live URLs can expire.
 

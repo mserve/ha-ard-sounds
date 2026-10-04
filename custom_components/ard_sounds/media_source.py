@@ -30,7 +30,7 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers.translation import async_get_translations
 
 from .api import ArdSoundsError, ArdSoundsNotFoundError
-from .const import DOMAIN
+from .const import DOMAIN, PODCAST_INITIALS
 from .models import CatalogItem, Route
 
 MAX_SEARCH_LENGTH = 200
@@ -154,6 +154,23 @@ class ArdSoundsMediaSource(MediaSource):
             )
         if route.kind in ("radio", "broadcaster", "station"):
             return await self._radio(route, service, labels)
+        if route.kind == "podcasts" and not route.key:
+            return self._folder(
+                route,
+                labels["podcasts"],
+                can_search=True,
+                children=[
+                    self._folder(Route("podcasts", "letter", initial), initial)
+                    for initial in PODCAST_INITIALS
+                ],
+            )
+        if route.kind == "podcasts" and route.key == "letter":
+            shows = await service.alphabetical_shows(route.page)
+            return self._folder(
+                route,
+                route.page,
+                children=[self._content("show", show) for show in shows],
+            )
         if route.kind == "podcasts":
             page = await service.shows(route.key or None)
             title = labels["podcasts"]
@@ -221,7 +238,7 @@ class ArdSoundsMediaSource(MediaSource):
         try:
             route = Route.parse(item.identifier or "")
             service = self._service()
-            self._require_kind(route, ("", "podcasts", "search"))
+            self._require_search_location(route)
             if (
                 query.media_filter_classes
                 and MediaClass.PODCAST not in query.media_filter_classes
@@ -270,6 +287,14 @@ class ArdSoundsMediaSource(MediaSource):
             raise Unresolvable(
                 translation_domain=DOMAIN, translation_key="unavailable_media"
             ) from err
+
+    @staticmethod
+    def _require_search_location(route: Route) -> None:
+        """Keep catalog search on advertised locations rather than letter folders."""
+        ArdSoundsMediaSource._require_kind(route, ("", "podcasts", "search"))
+        if route.kind == "podcasts" and route.key == "letter":
+            msg = "Search is unavailable inside a letter folder"
+            raise ValueError(msg)
 
     @staticmethod
     def _require_kind(route: Route, allowed: tuple[str, ...]) -> None:

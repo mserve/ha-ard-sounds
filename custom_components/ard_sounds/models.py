@@ -11,12 +11,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, unquote, urlsplit
 
-from .const import MAX_ROUTE_LENGTH
+from .const import MAX_ROUTE_LENGTH, PODCAST_INITIALS
 
 if TYPE_CHECKING:
     from .api import ArdSoundsGraphQLClient
@@ -187,6 +188,21 @@ class Podcast(CatalogItem):
     station: Station = field(default_factory=lambda: Station("unknown", "ARD", "ARD"))
 
 
+def podcast_sort_title(title: str) -> str:
+    """Sort case-insensitively, treating umlauts and accents as their base letters."""
+    return "".join(
+        char
+        for char in unicodedata.normalize("NFKD", title.strip().casefold())
+        if not unicodedata.combining(char)
+    )
+
+
+def podcast_initial(title: str) -> str:
+    """Group a title into A-Z or # for numbers, symbols, and other scripts."""
+    initial = podcast_sort_title(title)[:1].upper()
+    return initial if initial and initial in PODCAST_INITIALS else "#"
+
+
 @dataclass(frozen=True, slots=True)
 class Episode(CatalogItem):
     """A published episode and its alternate audio distributions."""
@@ -269,7 +285,7 @@ class Route:
             "broadcaster": (2,),
             "station": (2,),
             "stream": (2,),
-            "podcasts": (1, 2),
+            "podcasts": (1, 2, 3),
             "show": (2, 3),
             "episode": (2,),
             "search": (3,),
@@ -285,5 +301,11 @@ class Route:
             not route.page.isdecimal() or int(route.page) > MAX_SEARCH_OFFSET
         ):
             msg = "Invalid search offset"
+            raise ValueError(msg)
+        if route.kind == "podcasts" and (
+            (route.key == "letter" and route.page not in tuple(PODCAST_INITIALS))
+            or (route.page and route.key != "letter")
+        ):
+            msg = "Invalid podcast letter"
             raise ValueError(msg)
         return route

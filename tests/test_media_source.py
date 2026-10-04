@@ -22,7 +22,7 @@ from homeassistant.components.media_source import MediaSourceItem, Unresolvable
 from homeassistant.config_entries import ConfigEntryState
 
 from custom_components.ard_sounds.api import ArdSoundsResponseError
-from custom_components.ard_sounds.const import DOMAIN
+from custom_components.ard_sounds.const import DOMAIN, PODCAST_INITIALS
 from custom_components.ard_sounds.media_source import ArdSoundsMediaSource
 from custom_components.ard_sounds.models import AudioCandidate, Route
 
@@ -49,10 +49,10 @@ def item(identifier: str = "") -> MediaSourceItem:
     return MediaSourceItem(MagicMock(), DOMAIN, identifier, None)
 
 
-async def test_root_and_podcast_pages(
+async def test_root_and_podcast_letters(
     source: ArdSoundsMediaSource, service: ArdSoundsService
 ) -> None:
-    """Browse generated URIs, including explicit cursor continuations."""
+    """Browse letter folders, complete sorted shows, and bounded episode pages."""
     with patch(
         "custom_components.ard_sounds.media_source.async_get_translations",
         new_callable=AsyncMock,
@@ -64,14 +64,23 @@ async def test_root_and_podcast_pages(
             "media-source://ard_sounds/radio",
             "media-source://ard_sounds/podcasts",
         ]
-        page = await source.async_browse_media(item("podcasts"))
-        assert page.children[0].media_class is MediaClass.PODCAST
-        assert not page.children[0].can_play
-        next_route = Route.parse(page.children[-1].identifier)
-        assert next_route.key
-        assert next_route.kind == "podcasts"
-        next_page = await source.async_browse_media(item(next_route.identifier))
-        assert next_page.children[0].title != page.children[0].title
+        podcasts = await source.async_browse_media(item("podcasts"))
+        assert podcasts.can_search
+        assert [child.title for child in podcasts.children] == list(PODCAST_INITIALS)
+        assert all(not child.can_search for child in podcasts.children)
+        letter = await source.async_browse_media(item("podcasts/letter/P"))
+        assert [child.title for child in letter.children] == [
+            "Plattdeutsche Nachrichten"
+        ]
+        assert letter.children[0].media_class is MediaClass.PODCAST
+        assert not letter.children[0].can_play
+        assert all(child.can_expand for child in letter.children)
+        assert not letter.can_search
+        empty = await source.async_browse_media(item("podcasts/letter/B"))
+        assert not empty.children  # Brunners Welt has no published episodes.
+        for child in podcasts.children:
+            uri = MediaSourceItem.from_uri(source.hass, child.media_content_id, None)
+            assert Route.parse(uri.identifier).page == child.title
         episode_page = await source.async_browse_media(item("show/62520168"))
         assert episode_page.children[0].can_play
         assert not episode_page.children[0].can_expand

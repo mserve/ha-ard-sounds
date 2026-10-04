@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "ARD Sounds",
-        "description": "Browse ARD radio and podcasts in the media browser. No ARD account is required."
+        "description": "Browse ARD radio and podcasts in the media browser. Podcasts without published episodes are hidden. No ARD account is required."
       }
     },
     "error": {
@@ -20,11 +20,11 @@
       "init": {
         "title": "ARD Sounds",
         "data": {
-          "page_size": "Podcasts per page",
+          "page_size": "Search results per page",
           "episode_limit": "Episodes per page"
         },
         "data_description": {
-          "page_size": "A number between 10 and 100.",
+          "page_size": "A number between 10 and 100. Letter folders show all matching podcasts.",
           "episode_limit": "A number between 10 and 100."
         }
       }

@@ -179,6 +179,13 @@ Agents should add or update tests when:
 - Data structures change
 - Public behavior changes
 
+Agents may access the frontend to test activities.
+- Frontend is set to use `trusted_networks` auth provider, if accessed locally
+- Agents should notify the user immediatly if any access problems occur and must never
+  try to solve them without explicitly getting consent!
+- There is a media player entity `media_player.dev_media_player` available
+  for any frontend testing
+
 Minimum expectations:
 - `pytest -q` runs without error
 - Coordinator logic is testable without real HTTP calls

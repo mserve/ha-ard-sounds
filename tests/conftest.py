@@ -53,8 +53,9 @@ def client(api_data: dict[str, Any]) -> AsyncMock:
         if operation == "Search" and variables.get("offset"):
             name = "search2"
         result = deepcopy(api_data[name])
-        if name == "stations_next":
-            result["permanentLivestreams"]["pageInfo"]["hasNextPage"] = False
+        if name in ("stations_next", "shows_next"):
+            field = "permanentLivestreams" if name == "stations_next" else "programSets"
+            result[field]["pageInfo"]["hasNextPage"] = False
         return result
 
     fake.request.side_effect = request

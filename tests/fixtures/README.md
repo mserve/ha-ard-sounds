@@ -18,13 +18,24 @@ primary-key ordering; episodes use publication date descending. Continuations
 were verified to return different IDs. Search returned `hasNextPage: true` with a
 null cursor, so its next offset advances by the returned node count.
 
+Show and search nodes include `availableEpisodes`, an alias for `items(first: 1)`
+with the same published/non-event filter as episode browsing. This presence check
+was recorded separately for the existing fixture show IDs. Empty shows are hidden
+from listings; raw cursors and search offsets still advance past them. ARD's
+`numberOfElements` can be null or zero even for shows containing episodes, so it
+is not used to determine emptiness. Missing/malformed presence connections report
+an API error rather than silently treating the catalog as empty.
+
 `id` is required for an accepted node; `coreId`, synopsis, images, duration, dates,
 publication service, and audio arrays can be absent or null. Image URLs contain a
 `{width}` placeholder, replaced with 512 for browse thumbnails. Invalid nodes are
 skipped, IDs are deduplicated within pages, and titles never identify content.
 Empty pages terminate regardless of totals; missing or repeated cursors on
 nonempty continued catalog pages raise explicit errors. The radio catalog is
-bounded to 20 pages of 100; show/episode pages are 10–100. Offset routes are bounded
+bounded to 20 pages of 100; alphabetical folders follow up to 100 show pages
+of 100, deduplicating shows across pages and sorting after all pages succeed.
+Case and accents are folded for A–Z; numbers, symbols, and other scripts use #.
+Search/episode pages are 10–100. Offset routes are bounded
 to 10,000.
 
 Live records are stream variants, grouped by `publicationService.id` and

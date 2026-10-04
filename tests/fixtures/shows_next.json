@@ -20,6 +20,13 @@
             "id": "5684",
             "title": "Bremen Eins",
             "organizationName": "RadioBremen"
+          },
+          "availableEpisodes": {
+            "nodes": [
+              {
+                "id": "11314321"
+              }
+            ]
           }
         },
         {
@@ -35,6 +42,9 @@
             "id": "5520",
             "title": "SR kultur",
             "organizationName": "SR"
+          },
+          "availableEpisodes": {
+            "nodes": []
           }
         }
       ]

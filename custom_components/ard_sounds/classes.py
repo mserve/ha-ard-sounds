@@ -10,7 +10,14 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from .api import ArdSoundsNotFoundError, ArdSoundsResponseError
-from .const import DEFAULT_TTL, MAX_CACHE_ENTRIES, MAX_CATALOG_PAGES, MAX_PAGE_SIZE
+from .const import (
+    DEFAULT_TTL,
+    MAX_CACHE_ENTRIES,
+    MAX_CATALOG_PAGES,
+    MAX_PAGE_SIZE,
+    MAX_SHOW_CATALOG_PAGES,
+    PODCAST_INITIALS,
+)
 from .models import (
     AudioCandidate,
     Episode,
@@ -21,6 +28,8 @@ from .models import (
     audio_candidates,
     item_fields,
     parse_date,
+    podcast_initial,
+    podcast_sort_title,
 )
 
 if TYPE_CHECKING:
@@ -222,8 +231,43 @@ class ArdSoundsService:
         )
         return self._show_page(data.get("programSets"), after)
 
+    async def alphabetical_shows(self, initial: str) -> tuple[Podcast, ...]:
+        """Collect all matching shows through bounded, cached catalog pages."""
+        if initial not in tuple(PODCAST_INITIALS):
+            msg = "Invalid podcast letter"
+            raise ValueError(msg)
+        shows: dict[str, Podcast] = {}
+        seen: set[str] = set()
+        after = None
+        for _ in range(MAX_SHOW_CATALOG_PAGES):
+            data = await self.cache.request(
+                "Shows", {"first": MAX_PAGE_SIZE, "after": after}
+            )
+            page = self._show_page(data.get("programSets"), after)
+            for show in page.items:
+                if podcast_initial(show.title) == initial:
+                    shows.setdefault(show.core_id or show.id, show)
+            if not page.has_next:
+                return tuple(
+                    sorted(
+                        shows.values(),
+                        key=lambda show: (
+                            podcast_sort_title(show.title),
+                            show.title,
+                            show.id,
+                        ),
+                    )
+                )
+            if not page.next_cursor or page.next_cursor in seen:
+                msg = "Invalid ARD show pagination"
+                raise ArdSoundsResponseError(msg)
+            seen.add(page.next_cursor)
+            after = page.next_cursor
+        msg = "ARD show catalog exceeded the page bound"
+        raise ArdSoundsResponseError(msg)
+
     def _show_page(self, connection: Any, after: str | None = None) -> Page[Podcast]:
-        """Normalize and deduplicate one show page by ID, not title."""
+        """Normalize nonempty shows, keeping pagination based on the raw page."""
         nodes, cursor, has_next, total = self._connection(connection, after)
         items = {
             node["id"]: Podcast(
@@ -231,11 +275,18 @@ class ArdSoundsService:
                 station=Station.from_api(node.get("publicationService")),
             )
             for node in nodes
+            if self._has_episodes(node)
         }
         if has_next and not cursor:
             msg = "Missing ARD show continuation"
             raise ArdSoundsResponseError(msg)
         return Page(tuple(items.values()), cursor, has_next, total)
+
+    @staticmethod
+    def _has_episodes(node: dict[str, Any]) -> bool:
+        """Use the published-episode connection rather than summary counts."""
+        nodes, *_ = ArdSoundsService._connection(node.get("availableEpisodes"))
+        return bool(nodes)
 
     async def search(self, query: str, offset: int = 0) -> Page[Podcast]:
         """Search via offsets; the search API does not supply usable cursors."""
@@ -254,6 +305,7 @@ class ArdSoundsService:
                 station=Station.from_api(node.get("publicationService")),
             )
             for node in nodes
+            if self._has_episodes(node)
         }
         return Page(
             tuple(items.values()),

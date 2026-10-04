@@ -21,6 +21,13 @@
               "id": "5540",
               "title": "radio3",
               "organizationName": "RBB"
+            },
+            "availableEpisodes": {
+              "nodes": [
+                {
+                  "id": "11299003"
+                }
+              ]
             }
           },
           {
@@ -36,6 +43,13 @@
               "id": "4000",
               "title": "NDR Info",
               "organizationName": "NDR"
+            },
+            "availableEpisodes": {
+              "nodes": [
+                {
+                  "id": "11308721"
+                }
+              ]
             }
           }
         ]
